@@ -1,0 +1,7 @@
+model_type: LM # lM or VM
+model_alias: opt # shortcut of models
+model_id: facebook/opt-30b # source of model from huggingface
+model_name: opt-30b # specific model name
+is_avg: True
+n_layers: 49 # number of layers (including embedding layer)
+dim: 7168

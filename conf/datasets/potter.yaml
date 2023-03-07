@@ -1,0 +1,11 @@
+dataset_name: hp_fmri
+fmri_dir: /projects/nlp/data/brain/datasets/${.dataset_name}
+dict_dir: ${hydra:runtime.cwd}/data/dicts_${.dataset_name} # path to save bi-modal dictionary
+alias_emb_dir: ${.fmri_dir}/experiments/LM_outputs # path to save word embeddings
+word_reps_dir: ${.fmri_dir}/experiments/LM_decontext_embs_averaged # path to save decontextualized word embeddings
+fmri_reps_dir: ${.fmri_dir}/experiments/word_level_fmri # path to save word level fmri representations
+fmri_sentences_path: ${hydra:runtime.cwd}/data/${.dataset_name}_sentences_pure.txt # all text sentences of datasets
+num_subjects: 8
+num_folds: 4
+tr_num: 1351
+smoothing: Gaussian

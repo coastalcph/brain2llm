@@ -1,0 +1,19 @@
+expdir:
+  expname: gpt2_enc
+data:
+  download_path: './data/download'
+  output_dir: './data/outputs/LM_out'
+  emb_dir: './data/embeddings/LM_emb'
+  reduced_output_dir: ./data/outputs/LM_out_reduced
+  reduced_emb_dir: ./data/outputs/LM_emb_reduced
+  wordlist_path: './data/wordlist_test.txt'
+  sentences_path: './data/sentences_test.txt'
+  ordered_wordlist_path: ./data/ordered_wordlist.txt
+  per_object_embs_path: ./data/embeddings/gpt2_words_embeddings # Directory to save the embeddings of per image/word
+model:
+  model_type: LM
+  model_alias: gpt2
+  pretrained_model: gpt2
+  model_name: gpt2
+  n_components: 2 # dimension size of embeddings
+  need_per_object_embs: True # if you need to save the embeddings of every image/word.

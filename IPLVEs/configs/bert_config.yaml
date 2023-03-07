@@ -1,0 +1,19 @@
+expdir:
+  expname: bert_enc
+data:
+  download_path: './data/download' # the path to save temparary files of downloading sentences .
+  output_dir: './data/outputs/LM_out' # the path to save the original output (*.npy) of words' or images' embeddings
+  reduced_output_dir: ./data/outputs/LM_out_reduced # the path to save the low-dimension output (*.npy) of words' or images' embeddings
+  reduced_emb_dir: ./data/embeddings/LM_emb_reduced # the path to save the low-dimension embedding files (*.txt) of words' or images' embeddings
+  emb_dir: './data/embeddings/LM_emb' # the path to save the original embedding files (*.txt) of words' or images' embeddings
+  wordlist_path: './data/wordlist.txt' # the path of original worlist
+  sentences_path: './data/sentences.txt' # the path to save all downloading sentences
+  ordered_wordlist_path: ./data/ordered_wordlist.txt # the path to save the sorted word based on the order of sentences.
+  per_object_embs_path: ./data/embeddings/bert_words_embeddings # Directory to save the embeddings of per image/word
+model:
+  model_type: LM # lM or VM
+  model_alias: bert # shortcut of models
+  pretrained_model: google/bert_uncased_L-2_H-128_A-2 # source of model from huggingface
+  model_name: bert_uncased_L-2_H-128_A-2 # specific model name
+  n_components: 2 # dimension size of embeddings
+  need_per_object_embs: True # if you need to save the embeddings of every image/word.

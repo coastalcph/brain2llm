@@ -41,10 +41,10 @@ def create_logger(filepath, vb=2):
     # file_handler.setFormatter(log_formatter)
     #
     # # create console handler and set level to info
-    # log_level = logging.DEBUG if vb == 2 else logging.INFO if vb == 1 else logging.WARNING
-    # console_handler = logging.StreamHandler()
-    # console_handler.setLevel(log_level)
-    # console_handler.setFormatter(log_formatter)
+    log_level = logging.DEBUG if vb == 2 else logging.INFO if vb == 1 else logging.WARNING
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(log_level)
+    console_handler.setFormatter(log_formatter)
 
     # create logger and set level to debug
     logger = logging.getLogger()
@@ -52,7 +52,7 @@ def create_logger(filepath, vb=2):
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
     # logger.addHandler(file_handler)
-    # logger.addHandler(console_handler)
+    logger.addHandler(console_handler)
 
     # reset logger elapsed time
     def reset_time():

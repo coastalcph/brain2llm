@@ -1,0 +1,10 @@
+expdir:
+  expname: regression
+data:
+  src_lang: LM
+  tgt_lang: fMRI
+  src_emb: /home/kfb818/projects/b2le/data/brain/fmri_fasttext_embeddings/nouns/nouns_fasttext_300.txt
+  tgt_emb: /home/kfb818/projects/datasets/fmri/fmri/nouns/100-random-voxels/scaled_100_mitchell_targets_6.txt
+  max_vocab: 20000
+  cuda: False
+

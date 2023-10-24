@@ -1,8 +1,8 @@
 import argparse
+import copy
 
 import addict
 import yaml
-import copy
 
 
 #-----------------------------
@@ -65,7 +65,7 @@ def update_config(config, unknown):
 
     return config
 
-def save_config(datadict: ForceKeyErrorDict, path: str):
+def save_config(datadict: ForceKeyErrorDict, path):
     datadict = copy.deepcopy(datadict)
     # datadict.training.ckpt_file = None
     # datadict.training.pop('exp_dir')
@@ -76,6 +76,7 @@ def create_args_parser():
     parser = argparse.ArgumentParser()
     # standard configs
     parser.add_argument('--config', type=str, default=None, help='Path to config file.')
+    parser.add_argument('--method', type=str, default="Procrustes", help='Procrustes or Regression')
     # parser.add_argument("--log_path", type=str, default="",
     #                     help='the path to save experiment logs')
     # parser.add_argument("--model_prefix", type=str, default="",

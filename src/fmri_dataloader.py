@@ -11,83 +11,48 @@ from sklearn.preprocessing import MinMaxScaler
 
 class FMRIWordLevel:
     def __init__(self, config):
-        self.data_dir = Path(config.data.fmri_dir)
-        self.outfile_dir = Path(config.data.word_level_fmri_rep_dir)
-        self.dataset_name = config.data.dataset_name
-        self.vec_dim = int(min(config.data.tr_num, config.convert_parameters.vec_dim))
-        self.subjects = config.data.num_subjects
-        # self.normalize = config.convert_parameters.normalize
-        self.lookout = config.convert_parameters.lookout
-        self.lookback = config.convert_parameters.lookback
-        self.delay = config.convert_parameters.delay
-        self.seed = config.muse_parameters.seed
-        # self.smoothing = config.convert_parameters.smoothing
+        self.data_dir = Path(config.datasets.fmri_dir)
+        self.outfile_dir = Path(config.datasets.fmri_reps_dir)
+        self.dataset_name = config.datasets.dataset_name
+        self.vec_dim = int(min(config.datasets.tr_num, config.gaussian_params.vec_dim))
+        self.subjects = config.datasets.num_subjects
+        # self.normalize = config.gaussian_params.normalize
+        self.lookout = config.gaussian_params.lookforward
+        self.lookback = config.gaussian_params.lookbackward
+        self.delay = config.gaussian_params.delay
+        self.seed = config.muse_params.seed
+        self.smoothing = config.datasets.smoothing
 
     def check_files_exist(self, vec_dim):
         files_exist = all(
             (
-                        self.outfile_dir / f"{self.dataset_name}-{t}-sub--{sub}-{self.lookback}-{self.lookout}-{vec_dim}.pth").exists()
-            for sub in range(1, self.subjects + 1) for t in ["type", "token"]
+                self.outfile_dir / f"{self.dataset_name}-{t}-sub--{sub}-{self.lookback}-{self.lookout}-{vec_dim}.pth").exists()
+            for sub in range(1, self.subjects + 1) for t in ["token"]
         )
         return files_exist
 
-    def fmri_data_init(self, smoothing):
+    def fmri_data_init(self):
         original_size_files_exist = self.check_files_exist(vec_dim=0)
         dim_size_files_exist = self.check_files_exist(vec_dim=self.vec_dim)
         if dim_size_files_exist:
             print(f"Word level fMRI dim size {self.vec_dim} already exists. Skipping dictionary building.")
         else:
-            self.convert_fmri(smoothing)
+            self.convert_fmri()
         if original_size_files_exist:
             print("Word level fMRI original size already exists. Skipping dictionary building.")
         else:
             self.vec_dim = 0
-            self.convert_fmri(smoothing)
+            self.convert_fmri()
 
-    def convert_fmri(self, smoothing):
-        if smoothing == "Gaussian":
-            if self.dataset_name == "potter":
+    def convert_fmri(self):
+        if self.smoothing == "Gaussian":
+            if self.dataset_name == "hp_fmri":
                 words, times, fmri_timestamp, subjects_dims, vecs = self.hp_dataloader()
             else:
                 words, times, fmri_timestamp, subjects_dims, vecs = self.nat_dataloader()
             vecs = self.map_words2vecs(words, times, fmri_timestamp, vecs, self.lookout,
                                        self.lookback, self.delay, normalize=False)
-        else:
-            words, subjects_dims, vecs = self.pereira_dataloader()
         self.save_files(words, torch.from_numpy(vecs), subjects_dims)
-
-    def pereira_dataloader(self):
-        # Here we change the name of original dirs for easy implementation (01-->1, P01-->M12)
-        self.outfile_dir.mkdir(parents=True, exist_ok=True)
-        pca = PCA(n_components=self.vec_dim, random_state=self.seed) if self.vec_dim else None
-        # pca = GaussianRandomProjection(random_state=self.seed, n_components=self.vec_dim) if self.vec_dim else None
-        words = []
-        reduced_vecs = None
-        subjects_dims = [0]
-        remove_idx = None
-        for i in range(1, self.subjects + 1):
-            print("Extracting vectors for subject {}".format(i))
-            matfile = self.data_dir / f"subject_{i}.mat"
-            data = sio.loadmat(str(matfile))
-            if i == 1:
-                for idx, curr_word in enumerate(data["keyConcept"]):
-                    if curr_word != "counting":
-                        words.append(curr_word[0][0])
-                    else:
-                        remove_idx = idx
-                        print("REMOVE counting idx:", remove_idx)
-                num_words, num_voxels = data["examples"].shape
-                reduced_vecs = np.full((num_words, num_voxels * self.subjects * 2), np.nan)
-            vecs = data["examples"]
-            if pca is not None:
-                reduced_vecs[:, (i - 1) * self.vec_dim: i * self.vec_dim] = pca.fit_transform(vecs)
-            else:
-                subjects_dims.append(subjects_dims[i - 1] + vecs.shape[1])
-                reduced_vecs[:, subjects_dims[i - 1]: subjects_dims[i]] = vecs
-        reduced_vecs = reduced_vecs[:, ~np.isnan(reduced_vecs).all(axis=0)]
-        if remove_idx is not None:
-            reduced_vecs = np.delete(reduced_vecs, remove_idx, 0)
-        return words, subjects_dims, reduced_vecs
 
     def nat_dataloader(self):
         self.outfile_dir.mkdir(parents=True, exist_ok=True)
@@ -150,18 +115,11 @@ class FMRIWordLevel:
     def save_files(self, words, words2vecs, subjects_dims):
         filtered_words = []
         index_needed = []
-        pure_words = []
         for i, w in enumerate(words):
             w_clean = self.remove_punct(w)[0]
             if w_clean not in {"+", "<punct>"}:
                 filtered_words.append(f"{w_clean}_{i}")
-                pure_words.append(f"{w_clean}")
-                # if w_clean.startswith("phi"):
-                #     print(w_clean)
                 index_needed.append(i)
-
-        pure_words = np.array(pure_words)
-        unique_words = list(dict.fromkeys(pure_words))
 
         for sub in range(1, self.subjects + 1):
             token_level_outfile_name = self.outfile_dir / f"{self.dataset_name}-token-sub--{sub}-{self.lookback}-{self.lookout}-{self.vec_dim}.pth"
@@ -173,17 +131,6 @@ class FMRIWordLevel:
                 vecs_selected = words2vecs[index_needed, subjects_dims[sub - 1]: subjects_dims[sub]]
                 assert vecs_selected.size() == (len(filtered_words), subjects_dims[sub] - subjects_dims[sub - 1])
             torch.save({'dico': filtered_words, 'vectors': vecs_selected.float()}, token_level_outfile_name)
-
-            type_level_outfile_name = self.outfile_dir / f"{self.dataset_name}-type-sub--{sub}-{self.lookback}-{self.lookout}-{self.vec_dim}.pth"
-            # vecs = alias_data["vectors"]
-            # dico = np.array(alias_data["dico"])
-            # if cased == "uncased":
-            word_embeddings = torch.empty((len(unique_words), vecs_selected.shape[1]))
-            word_indices = [np.where(pure_words == re.sub(r"_\d+", "", w))[0] for w in unique_words]
-            for i, indices in enumerate(word_indices):
-                word_embeddings[i] = torch.mean(vecs_selected[indices], dim=0)
-            # return word_embeddings
-            torch.save({'dico': unique_words, 'vectors': word_embeddings.float()}, type_level_outfile_name)
 
     @staticmethod
     def find_closest(lst, target_num):
@@ -283,11 +230,6 @@ class FMRIWordLevel:
         :param word:
         :return: the (possibly modified) word, a boolean variable whether end of sentence
         """
-        # word_cleaned = re.findall(r'\b\d{1,2}:\d{2}\s|[ap]\.m\.|Mr\.|Mrs\.|Ms\.|Dr\.|\b\w+-\w+|\b\w+(?:\'\w+)|\w+',word)
-        # word_cleaned = re.findall(r'\b\d{1,2}:\d{2}\s|[ap]\.m\.|Mr\.|Mrs\.|Ms\.|Dr\.|\b\w+(?:-\w+)?\b|\b\w+(?:\'\w+)|\w+',word)
-        # word_cleaned = re.findall(
-        #     r'\b\d{1,2}:\d{2}\s|[ap]\.m\.|Mr\.|Mrs\.|Ms\.|Dr\.|\b\w+(?:\'\w+)|\b(\b\w+(?:-\w+)*|\w+)\b',
-        #     word)
         word_cleaned = re.findall(r'\b\d{1,2}:\d{2}\s|[ap]\.m\.|Mr\.|Mrs\.|Ms\.|Dr\.|\b\w+(?:\'\w+)|\b\w+(?:-\w+)*|w+',
                                   word)
         if not word_cleaned:

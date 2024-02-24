@@ -29,19 +29,6 @@ def normalization(vecs):
 VALIDATION_METRIC_SUP = 'precision_at_1-csls_knn_100'
 VALIDATION_METRIC_UNSUP = 'mean_cosine-csls_knn_100-S2T-10000'
 
-PARAMETERS_NUM = {
-    'resnet18': 11.69, 'resnet34': 21.80, 'resnet50': 25.56, 'resnet101': 44.55, 'resnet152': 60.19,
-    'bert_uncased_L-2_H-128_A-2': 4.4, 'bert_uncased_L-4_H-256_A-4': 11.3, 'bert_uncased_L-4_H-512_A-8': 29.1,
-    'bert_uncased_L-8_H-512_A-8': 41.7, 'bert-base-uncased': 110, 'bert-large-uncased': 340,
-    'gpt2': 117, 'gpt2-medium': 345, 'gpt2-large': 762, 'gpt2-xl': 1542,
-    'opt-125m':125, 'opt-1.3b':1300, 'opt-6.7b':6700, 'opt-30b':30000,
-    "segformer-b0-finetuned-ade-512-512":3.4,
-    "segformer-b1-finetuned-ade-512-512":13.1,
-    "segformer-b2-finetuned-ade-512-512":24.2,
-    "segformer-b3-finetuned-ade-512-512":44.0,
-    "segformer-b4-finetuned-ade-512-512":60.8,
-    "segformer-b5-finetuned-ade-640-640":81.4}
-
 # main
 parser = argparse.ArgumentParser(description='Supervised training')
 parser.add_argument("--seed", type=int, default=-1, help="Initialization seed")

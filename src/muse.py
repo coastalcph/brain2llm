@@ -15,30 +15,31 @@ from src.utils.utils_helper import *
 
 
 class Muse(FMRIWordLevel):
-    def __init__(self, config, train_eval, fmri_type="type"):
+    def __init__(self, config, train_eval, fmri_type="token"):
         super().__init__(config)
         self.config = config
         self.fmri_type = fmri_type
-        self.num_folds = config.data.num_folds
-        self.model_type = config.model.model_type
-        self.model_name = config.model.model_name
-        self.model_alias = config.model.model_alias
-        self.dict_dir = config.data.dict_dir + f"/{fmri_type}"
-        self.word_decon_embs_dir = config.data.word_decontextualized_embs_dir
-        self.layers = config.model.get("n_layers")
-        self.is_average = config.model.is_avg
+        self.num_folds = config.datasets.num_folds
+        self.model_type = config.models.model_type
+        self.model_name = config.models.model_name
+        self.model_alias = config.models.model_alias
+        self.dict_dir = config.datasets.dict_dir + f"/{fmri_type}"
+        self.word_decon_embs_dir = config.datasets.word_reps_dir
+        self.layers = config.models.get("n_layers")
+        self.is_average = config.models.is_avg
         self.if_cased = "uncased" if "uncased" in self.model_name else "cased"
         self.suffix = "averaged" if self.is_average else "first"
         self.do = train_eval
-        self.vec_dim = min(config.data.tr_num, config.model.dim) if self.do == "train" else config.model.dim
-        self.src_lang = config.muse_parameters.src_lang
-        self.tgt_lang = config.muse_parameters.tgt_lang
+        self.vec_dim = min(config.datasets.tr_num, config.models.dim) if self.do == "train" else config.models.dim
+        self.src_lang = config.muse_params.src_lang
+        # self.tgt_lang = config.muse_params.tgt_lang
+        self.tgt_lang = self.model_name
 
     def set_muse_param(self, layer, sub, bin_name, fold=None):
-        self.config.muse_parameters.src_lang = f"subject-{sub}"
-        self.config.muse_parameters.tgt_lang = f"{self.model_name}.layer_{layer}"
-        self.config.muse_parameters.verbose = 2 if layer == 0 and sub == 1 else 0
-        muse_params = copy.deepcopy(self.config.muse_parameters)
+        self.config.muse_params.src_lang = f"subject-{sub}"
+        self.config.muse_params.tgt_lang = f"{self.model_name}.layer_{layer}"
+        self.config.muse_params.verbose = 2 if layer == 0 and sub == 1 else 0
+        muse_params = copy.deepcopy(self.config.muse_params)
         if self.model_alias == "ft" or self.model_alias == "openai" or self.model_alias == "bg":
             muse_params.tgt_emb = f"{self.word_decon_embs_dir}/{self.suffix}/{self.model_name}/{self.dataset_name}_{self.model_name}_dim_{self.vec_dim}_layer_{layer}.pth"
         else:
@@ -51,7 +52,7 @@ class Muse(FMRIWordLevel):
             muse_params.emb_dim = self.vec_dim
         else:
             muse_params.dico_eval = f"{self.dict_dir}/{self.if_cased}_LM_all_words_{self.dataset_name}_regression_eval{bin_name}.txt"
-            muse_params.src_emb = f"{self.word_decon_embs_dir}_regression-{self.fmri_type}/{self.model_name}/{self.dataset_name}_{self.model_name}_dim_{self.config.model.dim}_layer_{layer}_sub_{sub}.pth"
+            muse_params.src_emb = f"{self.word_decon_embs_dir}_regression-{self.fmri_type}/{self.model_name}/{self.dataset_name}_{self.model_name}_dim_{self.config.models.dim}_layer_{layer}_sub_{sub}.pth"
         return muse_params
 
     def run(self, extend_exp=None):
@@ -70,7 +71,7 @@ class Muse(FMRIWordLevel):
         metrics_df = pd.DataFrame()
 
         for layer in range(self.layers):
-            for sub in range(1, self.config.data.num_subjects + 1):
+            for sub in range(1, self.config.datasets.num_subjects + 1):
                 metrics = {"Subjects": f"subject-{sub}",
                            "Models": self.model_name,
                            "Layers": f"layer-{layer}"}

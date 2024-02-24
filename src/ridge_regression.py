@@ -14,20 +14,20 @@ class RidgeRegression(FMRIWordLevel):
     def __init__(self, config):
         super().__init__(config)
         self.config = config
-        self.num_folds = config.data.num_folds
-        self.model_name = config.model.model_name
-        self.model_alias = config.model.model_alias
-        self.alias_emb_dir = config.data.alias_emb_dir
-        self.word_emb_unique_save_dir = config.data.word_decontextualized_embs_dir
-        self.layers = config.model.get("n_layers")
-        self.is_average = config.model.is_avg
-        self.tr_num = config.data.tr_num
-        self.lm_dim_size = config.convert_parameters.vec_dim
+        self.num_folds = config.datasets.num_folds
+        self.model_name = config.models.model_name
+        self.model_alias = config.models.model_alias
+        self.alias_emb_dir = config.datasets.alias_emb_dir
+        self.word_emb_unique_save_dir = config.datasets.word_reps_dir
+        self.layers = config.models.get("n_layers")
+        self.is_average = config.models.is_avg
+        self.tr_num = config.datasets.tr_num
+        self.lm_dim_size = config.gaussian_params.vec_dim
         self.if_cased = "uncased" if "uncased" in self.model_name else "cased"
         self.suffix = "averaged" if self.is_average else "first"
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    def run_regression(self, fmri_type="type"):
+    def run_regression(self, fmri_type="token"):
         regression_files_exist, preds_save_root, word_embs_save_path = self.setup_word_emb_and_regression_path(
             fmri_type)
         if regression_files_exist:

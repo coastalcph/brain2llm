@@ -4,9 +4,7 @@ from pathlib import Path
 import fasttext
 import fasttext.util
 import numpy as np
-import openai
 import torch
-from openai.embeddings_utils import get_embedding
 from sklearn.decomposition import PCA
 
 from .utils.LM_reps_utils import LMEmbedding
@@ -16,16 +14,16 @@ class LMExtractor:
     def __init__(self, config, words=None):
         self.config = config
         self.words = words
-        self.dataset_name = config.data.dataset_name
-        self.model_name = config.model.model_name
-        self.model_alias = config.model.model_alias
-        self.num_tr = config.data.tr_num
-        self.alias_emb_dir = Path(config.data.alias_emb_dir)
-        self.suffix = "averaged" if config.model.is_avg else "first"
+        self.dataset_name = config.datasets.dataset_name
+        self.model_name = config.models.model_name
+        self.model_alias = config.models.model_alias
+        self.num_tr = config.datasets.tr_num
+        self.alias_emb_dir = Path(config.datasets.alias_emb_dir)
+        self.suffix = "averaged" if config.models.is_avg else "first"
         self.save_dir = self.alias_emb_dir / self.suffix / self.model_name
-        self.fmri_sentences_path = Path(config.data.fmri_sentences_path)
-        self.seed = config.muse_parameters.seed
-        self.model_dim = config.model.dim
+        self.fmri_sentences_path = Path(config.datasets.fmri_sentences_path)
+        self.seed = config.muse_params.seed
+        self.model_dim = config.models.dim
 
     def get_lm_rep(self):
         with open(self.fmri_sentences_path, 'r') as sent_reader:
@@ -37,9 +35,6 @@ class LMExtractor:
         elif self.model_alias in ["bert", "gpt2", "opt"]:
             embeddings_extractor = LMEmbedding(self.config, text_sentences_array)
             all_context_words, nlp_features_dict = embeddings_extractor.get_lm_layer_representations()
-        elif self.model_alias == "openai":
-            self.openai_api_emb()
-            return
         else:
             nlp_features_dict = {}
 
@@ -61,24 +56,6 @@ class LMExtractor:
             embeddings = torch.from_numpy(np.array([ft.get_word_vector(x) for x in self.words]))
             save_path = save_dir / f"{self.dataset_name}_{self.model_name}_dim_{embeddings.shape[1]}_layer_0.pth"
             torch.save({'dico': self.words, 'vectors': embeddings}, save_path)
-
-    def openai_api_emb(self):
-
-        openai.api_key = os.getenv("OPENAI_API_KEY")
-
-        embedding_model = "text-embedding-ada-002"
-        # embedding_encoding = "cl100k_base"  # this the encoding for text-embedding-ada-002
-        save_dir = self.save_dir
-        # encoding = tiktoken.get_encoding(embedding_encoding)
-        embeddings = np.array([get_embedding(x, engine=embedding_model) for x in self.words])
-        save_dir.mkdir(parents=True, exist_ok=True)
-        if embeddings.shape[1] > self.num_tr:
-            pca = PCA(n_components=self.num_tr, random_state=self.seed)
-            reduced_embeddings = pca.fit_transform(embeddings)
-            save_path = save_dir / f"{self.dataset_name}_{self.model_name}_dim_{reduced_embeddings.shape[1]}_layer_0.pth"
-            torch.save({'dico': self.words, 'vectors': torch.from_numpy(reduced_embeddings)}, save_path)
-        save_path = save_dir / f"{self.dataset_name}_{self.model_name}_dim_{embeddings.shape[1]}_layer_0.pth"
-        torch.save({'dico': self.words, 'vectors': torch.from_numpy(embeddings)}, save_path)
 
     def save_layer_representations(self, words, model_layer_dict):
         for layer in model_layer_dict.keys():

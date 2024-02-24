@@ -31,21 +31,21 @@ def CV_ind(n, n_folds):
     return ind
 
 
-def uniform_config(args):
-    muse_update_params = {
-        'emb_dim': args.model.dim,
-        'tgt_lang': args.model.model_name,
-        'dico_train': args.data.dict_dir,
-        'dico_eval': args.data.dict_dir,
-        'src_emb': args.data.word_level_fmri_rep_dir,
-        'tgt_emb': args.data.word_decontextualized_embs_dir if 'ft' != args.model.model_alias else args.data.alias_emb_dir,
-        'exp_name': args.expdir.expname,
-    }
+# def uniform_config(args):
+#     muse_update_params = {
+#         'emb_dim': args.models.dim,
+#         'tgt_lang': args.models.model_name,
+#         'dico_train': args.data.dict_dir,
+#         'dico_eval': args.data.dict_dir,
+#         'src_emb': args.data.fmri_reps_dir,
+#         'tgt_emb': args.data.word_reps_dir if 'ft' != args.models.model_alias else args.data.alias_emb_dir,
+#         'exp_name': args.expdir.expname,
+#     }
 
-    args.convert_parameters.vec_dim = args.model.dim
-    args.muse_parameters.update(muse_update_params)
+#     args.gaussian_params.vec_dim = args.models.dim
+#     args.muse_parameters.update(muse_update_params)
 
-    return args
+#     return args
 
 
 def normalization(vecs):

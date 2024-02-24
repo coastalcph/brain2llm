@@ -155,5 +155,6 @@ apicache-py3
 *.bin
 *.gz
 *.ctrl
-exps_results_config
-latex*
+logs/
+old/
+outputs/

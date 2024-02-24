@@ -8,22 +8,22 @@ from scipy.stats import spearmanr
 from src.utils.utils_helper import normalization
 import pandas as pd
 
-from src.muse_debug import Muse
+from src.muse import Muse
 
 
 class RSA(Muse):
-    def __init__(self, config, fmri_type="type"):
-        super().__init__(config, "type")
+    def __init__(self, config, fmri_type="token"):
+        super().__init__(config)
         self.config = config
-        self.model_name = config.model.model_name
-        self.model_alias = config.model.model_alias
+        self.model_name = config.models.model_name
+        self.model_alias = config.models.model_alias
         # self.dataset_name = "new_nat_story1"
-        self.fmri_type = "type"
-        self.word_emb_unique_save_dir = config.data.word_decontextualized_embs_dir
-        self.layers = config.model.get("n_layers")
-        self.is_average = config.model.is_avg
-        self.tr_num = config.data.tr_num
-        self.lm_dim_size = config.model.dim
+        self.fmri_type = fmri_type
+        self.word_emb_unique_save_dir = config.datasets.word_reps_dir
+        self.layers = config.models.get("n_layers")
+        self.is_average = config.models.is_avg
+        self.tr_num = config.datasets.tr_num
+        self.lm_dim_size = config.models.dim
         self.if_cased = "uncased" if "uncased" in self.model_name else "cased"
         self.suffix = "averaged" if self.is_average else "first"
 

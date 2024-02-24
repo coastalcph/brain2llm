@@ -13,10 +13,10 @@ class LMEmbedding:
     def __init__(self, args, text_sentences_array):
         self.args = args
         self.text_sentences_array = text_sentences_array
-        self.pretrained_model = args.model.pretrained_model
-        self.model_name = args.model.model_name
-        self.model_alias = args.model.model_alias
-        self.is_average = args.model.is_avg
+        self.pretrained_model = args.models.model_id
+        self.model_name = args.models.model_name
+        self.model_alias = args.models.model_alias
+        self.is_average = args.models.is_avg
         self.device = [i for i in range(torch.cuda.device_count())] if torch.cuda.device_count() >= 1 else ["cpu"]
 
     def get_lm_layer_representations(self):

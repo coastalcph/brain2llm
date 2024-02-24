@@ -1,56 +1,51 @@
-# brainlm
-Larger Language Models Converge on Brain-Like Representations of the World
+# Structural Similarities Between Language Models and Neural Response Measurements
 
+This is the code to replicate the experiments described in the paper (to appear in NeurReps@NeurIPS, 2023):
 
-# FMRI datasets
+> Jiaang Li*, Antonia Karamolegkou*, Yova Kementchedjhieva, Mostafa Abdou, Sune Lehmann, and Anders Søgaard. [Structural Similarities Between Language Models and Neural Response Measurements.](https://openreview.net/forum?id=ZobkKCTaiY) In _NeurIPS 2023 Workshop on Symmetry and Geometry in Neural Representations 2023_.
 
-| Dataset Name                                                                     | Participants | Language        | Format                | Total n of words (cased / uncased) |
+## Installation
+You can clone this repository issuing: <br>
+`git clone git@github.com:coastalcph/brainlm.git`
+
+1\. Create a fresh conda environment and install all dependencies.
+```text
+conda create -n brain2lang python=3.11
+conda activate brain2lang
+pip3 install torch torchvision torchaudio
+pip install -r requirements.txt
+```
+
+## fMRI datasets
+
+| Dataset Name                                                                     | Participants | Language        | Format                | Total n of words |
 |----------------------------------------------------------------------------------|--------------|-----------------|-----------------------|------------------------------------|
-| [Nouns](https://www.cs.cmu.edu/afs/cs/project/theo-73/www/science2008/data.html) | 9            | English         | seperate nouns        | 60                                 |
-| [Harry Potter](http://www.cs.cmu.edu/~fmri/plosone/)                             | 8            | English         | book chapter          | 1405 / 1291                        |
-| [Alice ](https://openneuro.org/datasets/ds002322/versions/1.0.3)                 | English      | book chapter    | 16                    | -                                  |
-| [Pereira](https://osf.io/crwz7/)                                                 | 16           | English         | sentences             | -                                  |
-| [Danders ](https://data.donders.ru.nl/collections/di/dccn/DSC_3011020.09_236?0)  | 204          | Dutch           | text                  | -                                  |
-| [The Little Prince ](https://openneuro.org/datasets/ds003643/versions/2.0.1)     | 112          | English, French | book chapter          | -                                  |
-| [Natural Stories](https://osf.io/eq2ba/?view_only=)                              | 19           | English         | natural story stimuli | 5228                               |
-| [THINGS ](https://www.biorxiv.org/content/10.1101/2022.07.22.501123v1.abstract)  | -            | -               | -                     | -                                  |
-| [BOLD](https://www.biorxiv.org/content/10.1101/2022.09.22.509104v1.full.pdf)     | -            | -               | -                     | -                                  |
+| [Harry Potter](http://www.cs.cmu.edu/~fmri/plosone/)                             | 8            | English         | book chapter          | 1405                        |
+| [Natural Stories](https://osf.io/eq2ba/?view_only=)                              | 19           | English         | Natural story stimuli | 5228                               |
 
-## Experiments
+## How to run
 
-**Attention**:
+See available model configurations in [`config.py`](./src/config.py) under `MODEL_CONFIGS` and available saving paths of datasets, runtime parameters, and projection method in [`config.py`](./src/config.py) under `RunConfig`.
 
-It is **not** necessary to process fmri data, build dictionaries, get LMs representations every time when running
-pipeline.py. Please note that those data can be obtained once and stored for future use, which will save time and
-resources.
-
-run single bert model (In this case, don't use SBATCH --array=0-5)
+Example to sequentially run BERT-Tiny and BERT-Mini models utilizing the Procrustes Analysis method on the Harry Potter dataset:
 
 ```bash
-python3 pipeline.py --config configs/bert_uncased_L-2_H-128_A-2.yaml
+python main.py \
+    --multirun \
+    models=bert-tiny,bert-mini \
+    datasets=hp_fmri \
+    projection_method=Procrustes
 ```
 
-You can update any parameters in the config by adding --<parameter_name> <value>. For example:
+## How to Cite
 
-```bash
-python3 pipeline.py --config configs/bert_uncased_L-2_H-128_A-2.yaml --model:is_avg False
-```
-
-To run different LMs, you can update the config as following:
-
-```bash
-python3 pipeline.py --config configs/bert_uncased_L-2_H-128_A-2.yaml --model:model_alias gpt2 --model:model_name gpt2 --model:pretrained_model gpt2 --model:dim 768 model:n_layer 13
-```
-
-Every experiment config will be saved in expdir after finishing that run.
-
-# RSA
-To run RSA in natural stories dataset:
-```bash
-python3 pipeline.py --config nat_configs/fasttext.yaml --method rsa
-```
-
-To run RSA in Harry Potter dataset:
-```bash
-python3 pipeline.py --config hp_configs/fasttext.yaml --method rsa
+```bibtex
+@inproceedings{
+li2023structural,
+title={Structural Similarities Between Language Models and Neural Response Measurements},
+author={Jiaang Li and Antonia Karamolegkou and Yova Kementchedjhieva and Mostafa Abdou and Sune Lehmann and Anders S{\o}gaard},
+booktitle={NeurIPS 2023 Workshop on Symmetry and Geometry in Neural Representations},
+year={2023},
+url={https://openreview.net/forum?id=ZobkKCTaiY}
+}
 ```

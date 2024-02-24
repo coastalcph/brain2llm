@@ -1,0 +1,38 @@
+defaults:
+  - datasets: potter
+  - models: opt-30b_default
+  - _self_
+
+gaussian_params:
+  vec_dim: ${models.dim}
+  lookforward: 2.0
+  lookbackward: 2.0
+  delay: 6.0
+  normalize: True
+
+muse_params:
+  seed: 42
+  normalize_embeddings: center
+  src_lang: brain
+  tgt_lang: ${models.model_name}
+  n_refinement: 0
+  dico_train: ${datasets.dict_dir}
+  dico_eval: ${datasets.dict_dir}
+  src_emb: ${datasets.fmri_reps_dir}
+  tgt_emb: ${datasets.word_reps_dir}
+  verbose: 2
+  exp_path: ""
+  exp_id: ""
+  cuda: True
+  export: ""
+  emb_dim: ${models.dim}
+  max_vocab: 200000
+  dico_method: csls_knn_100
+  dico_build: S2T&T2S
+  dico_threshold: 0
+  dico_max_rank: 10000
+  dico_min_size: 0
+  dico_max_size: 0
+  load_optim: False
+
+projection_method: ???

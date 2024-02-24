@@ -21,7 +21,7 @@ for model in MODEL_CONFIGS:
 @hydra.main(version_base=None, config_path="conf", config_name="base_config")
 def main(cfg: RunConfig) -> None:
     OmegaConf.resolve(cfg)
-    print(f"Run config:\n{'-'*20}\n{OmegaConf.to_yaml(cfg)}{'-'*20}\n")
+    # print(f"Run config:\n{'-'*20}\n{OmegaConf.to_yaml(cfg)}{'-'*20}\n")
     utils_helper.enforce_reproducibility(seed=cfg.muse_params.seed)
     method = cfg.projection_method
 
@@ -36,6 +36,7 @@ def main(cfg: RunConfig) -> None:
         lm_emb_dict_builder.process_embeddings(cfg)
         print("-" * 25 + "Extract and Decontextualize LMs representation completed!" + "-" * 25)
     
+    return 0
     if method == "Procrustes":
         procrustes_exp = Muse(cfg, train_eval="train")
         procrustes_exp.run()

@@ -155,6 +155,5 @@ apicache-py3
 *.bin
 *.gz
 *.ctrl
-logs/
-old/
 outputs/
+multirun/
